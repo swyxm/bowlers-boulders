@@ -51,27 +51,35 @@ export class GameScene extends Phaser.Scene {
     const w = this.scale.width;
     const h = this.scale.height;
 
+    // Create a subtle downward curve - starts low, curves down slightly, ends low
     const bottom = new Phaser.Math.Vector2(0, h);
-    const top = new Phaser.Math.Vector2(w, 0.4 * h);
+    const top = new Phaser.Math.Vector2(w, h * 0.7); // Only 30% of screen height
+    // Multiple control points for a subtle downward curve
+    const control1 = new Phaser.Math.Vector2(w * 0.2, h * 0.95); // Very gentle start
+    const control2 = new Phaser.Math.Vector2(w * 0.5, h * 0.8);  // Subtle downward curve in middle
+    const control3 = new Phaser.Math.Vector2(w * 0.8, h * 0.9); // Gentle end
+    
     const vec = top.clone().subtract(bottom);
     this.slope = {
       bottom,
       top,
+      control: control1, // Keep for backward compatibility
+      control1,
+      control2,
+      control3,
       unit: vec.clone().normalize(),
       normal: new Phaser.Math.Vector2(-vec.y, vec.x).normalize(),
       length: vec.length(),
+      isCurved: true,
+      curveType: 'cubic', // Use cubic Bezier for more complex curves
     };
 
-    const g = this.add.graphics();
-    g.fillStyle(0x0b0a10, 1);
-    g.fillRect(0, 0, w, h);
-    g.fillStyle(0x2b2146, 1);
-    g.beginPath();
-    g.moveTo(this.slope.bottom.x, this.slope.bottom.y);
-    g.lineTo(this.slope.top.x, this.slope.top.y);
-    g.lineTo(w, h);
-    g.closePath();
-    g.fillPath();
+    const bg = this.add.image(w / 2, h / 2, "gamebg");
+    const scaleX = w / bg.width;
+    const scaleY = h / bg.height;
+    const scale = Math.max(scaleX, scaleY); 
+    bg.setScale(scale);
+    bg.setOrigin(0.5);
 
     this.player = new PlayerController(this, this.slope, {});
     this.cursors = this.input.keyboard?.createCursorKeys();

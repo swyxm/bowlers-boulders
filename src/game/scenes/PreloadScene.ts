@@ -13,6 +13,7 @@ export class PreloadScene extends Phaser.Scene {
     g1.destroy();
 
     this.load.image("boulder", "/assets/boulder.png");
+    this.load.image("gamebg", "/assets/gamebg.png");
 
     this.load.image("bowler1", "/assets/bowler/bowler1.png");
     this.load.image("bowler2", "/assets/bowler/bowler2.png");

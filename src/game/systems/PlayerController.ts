@@ -3,9 +3,15 @@ import * as Phaser from "phaser";
 export type SlopeGeometry = {
   bottom: Phaser.Math.Vector2;
   top: Phaser.Math.Vector2;
+  control: Phaser.Math.Vector2; // Control point for the curve (backward compatibility)
+  control1?: Phaser.Math.Vector2; // First control point for cubic curve
+  control2?: Phaser.Math.Vector2; // Second control point for cubic curve
+  control3?: Phaser.Math.Vector2; // Third control point for cubic curve
   unit: Phaser.Math.Vector2; 
   normal: Phaser.Math.Vector2; 
   length: number;
+  isCurved: boolean;
+  curveType?: 'quadratic' | 'cubic'; // Type of curve
 };
 
 export type PlayerControllerOptions = {
@@ -105,7 +111,49 @@ export class PlayerController {
 
   private pointAtS(s: number): Phaser.Math.Vector2 {
     const clamped = Phaser.Math.Clamp(s, 0, 1);
-    return this.slope.bottom.clone().add(this.slope.unit.clone().scale(this.slope.length * clamped));
+    
+    if (this.slope.isCurved) {
+      const t = clamped;
+      
+      if (this.slope.curveType === 'cubic' && this.slope.control1 && this.slope.control2 && this.slope.control3) {
+        // Use cubic Bezier curve: B(t) = (1-t)³P₀ + 3(1-t)²tP₁ + 3(1-t)t²P₂ + t³P₃
+        // where P₀ = bottom, P₁ = control1, P₂ = control2, P₃ = top
+        const oneMinusT = 1 - t;
+        const oneMinusTCubed = oneMinusT * oneMinusT * oneMinusT;
+        const threeOneMinusTSquaredT = 3 * oneMinusT * oneMinusT * t;
+        const threeOneMinusTTsquared = 3 * oneMinusT * t * t;
+        const tCubed = t * t * t;
+        
+        const x = oneMinusTCubed * this.slope.bottom.x + 
+                  threeOneMinusTSquaredT * this.slope.control1.x + 
+                  threeOneMinusTTsquared * this.slope.control2.x + 
+                  tCubed * this.slope.top.x;
+        const y = oneMinusTCubed * this.slope.bottom.y + 
+                  threeOneMinusTSquaredT * this.slope.control1.y + 
+                  threeOneMinusTTsquared * this.slope.control2.y + 
+                  tCubed * this.slope.top.y;
+        
+        return new Phaser.Math.Vector2(x, y);
+      } else {
+        // Fallback to quadratic Bezier curve
+        const oneMinusT = 1 - t;
+        const oneMinusTSquared = oneMinusT * oneMinusT;
+        const twoOneMinusTT = 2 * oneMinusT * t;
+        const tSquared = t * t;
+        
+        const x = oneMinusTSquared * this.slope.bottom.x + 
+                  twoOneMinusTT * this.slope.control.x + 
+                  tSquared * this.slope.top.x;
+        const y = oneMinusTSquared * this.slope.bottom.y + 
+                  twoOneMinusTT * this.slope.control.y + 
+                  tSquared * this.slope.top.y;
+        
+        return new Phaser.Math.Vector2(x, y);
+      }
+    } else {
+      // Straight line (original behavior)
+      return this.slope.bottom.clone().add(this.slope.unit.clone().scale(this.slope.length * clamped));
+    }
   }
 }
 
