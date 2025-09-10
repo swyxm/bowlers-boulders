@@ -2,10 +2,10 @@
 
 import { useEffect, useRef } from "react";
 import Phaser from "phaser";
-import { BootScene } from "@/game/scenes/BootScene";
-import { PreloadScene } from "@/game/scenes/PreloadScene";
-import { GameScene } from "@/game/scenes/GameScene";
-import { UIScene } from "@/game/scenes/UIScene";
+import { BootScene } from "../game/scenes/BootScene";
+import { PreloadScene } from "../game/scenes/PreloadScene";
+import { GameScene } from "../game/scenes/GameScene";
+import { UIScene } from "../game/scenes/UIScene";
 
 type GameCanvasProps = {
   selectedCharacter?: string | null;
@@ -19,18 +19,19 @@ export default function GameCanvas({ selectedCharacter }: GameCanvasProps) {
     if (!containerRef.current) return;
     if (gameRef.current) return;
 
-    const width = containerRef.current.clientWidth || 800;
-    const height = containerRef.current.clientHeight || 600;
+    // Use a fixed base size and Scale.FIT so Phaser manages responsive scaling
+    const baseWidth = 1280;
+    const baseHeight = 720;
 
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
       parent: containerRef.current,
-      backgroundColor: "#0a0a0a",
+      backgroundColor: "#1b1329",
       scale: {
-        mode: Phaser.Scale.RESIZE,
+        mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
-        width,
-        height,
+        width: baseWidth,
+        height: baseHeight,
       },
       render: {
         antialias: false,
@@ -57,18 +58,7 @@ export default function GameCanvas({ selectedCharacter }: GameCanvasProps) {
     game.scene.add("GameScene", GameScene, false);
     game.scene.add("UIScene", UIScene, false);
 
-    const handleResize = () => {
-      if (!gameRef.current || !containerRef.current) return;
-      const newWidth = containerRef.current.clientWidth || 800;
-      const newHeight = containerRef.current.clientHeight || 600;
-      gameRef.current.scale.resize(newWidth, newHeight);
-    };
-
-    const ro = new ResizeObserver(handleResize);
-    ro.observe(containerRef.current);
-
     return () => {
-      ro.disconnect();
       gameRef.current?.destroy(true);
       gameRef.current = null;
     };

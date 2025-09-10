@@ -97,11 +97,11 @@ export class GameScene extends Phaser.Scene {
     this.playerS = Phaser.Math.Clamp(this.playerS, 0, 1);
     // Jump with Space along normal
     if (Phaser.Input.Keyboard.JustDown(this.spaceKey) && this.grounded) {
-      this.playerNormalVel = 300;
+      this.playerNormalVel = 520;
       this.grounded = false;
     }
     if (!this.grounded) {
-      this.playerNormalVel -= 900 * dt; // gravity back to slope
+      this.playerNormalVel -= 1350 * dt; // gravity back to slope (tuned)
       this.playerNormalOffset += this.playerNormalVel * dt;
       if (this.playerNormalOffset <= 0) {
         this.playerNormalOffset = 0;
@@ -121,8 +121,8 @@ export class GameScene extends Phaser.Scene {
       b.rollAngleDeg -= (speed * dt) / Math.max(10, b.radius) * 30;
       const pos = this.pointAtS(b.s).add(this.slopeNormal.clone().scale(-b.radius));
       b.sprite.setPosition(pos.x, pos.y);
-      b.sprite.setRotation(Math.atan2(this.slopeUnit.y, this.slopeUnit.x));
-      b.sprite.setAngle(b.rollAngleDeg);
+      const baseRot = Math.atan2(this.slopeUnit.y, this.slopeUnit.x);
+      b.sprite.setRotation(baseRot + Phaser.Math.DegToRad(b.rollAngleDeg));
 
       // Cull at bottom
       if (b.s <= -0.05) {
