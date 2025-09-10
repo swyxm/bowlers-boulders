@@ -1,199 +1,118 @@
-import Phaser from "phaser";
-
-type Boulder = {
-  sprite: Phaser.GameObjects.Image;
-  s: number; // 0 bottom, 1 top
-  radius: number;
-  rollAngleDeg: number;
-  speed: number; // px/s along slope
-};
+import * as Phaser from "phaser";
+import { PlayerController, type SlopeGeometry } from "../systems/PlayerController";
+import { BoulderSpawner } from "../systems/BoulderSpawner";
+import { WaveManager } from "../systems/WaveManager";
+import { ScoreTimer } from "../systems/ScoreTimer";
 
 export class GameScene extends Phaser.Scene {
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
-  private elapsedMs: number = 0;
-  private slopeBottom!: Phaser.Math.Vector2;
-  private slopeTop!: Phaser.Math.Vector2;
-  private slopeUnit!: Phaser.Math.Vector2;
-  private slopeNormal!: Phaser.Math.Vector2;
-  private slopeLength!: number;
-  private playerSprite!: Phaser.GameObjects.Image;
-  private playerS: number = 0.15;
-  private playerRadius: number = 18;
-  private playerNormalOffset: number = 0; // distance away from slope along normal
-  private playerNormalVel: number = 0; // velocity along normal (px/s)
-  private grounded: boolean = true;
   private spaceKey!: Phaser.Input.Keyboard.Key;
-  private boulders: Boulder[] = [];
-  private spawnAccumulatorMs: number = 0;
-  private waveIndex: number = 1;
-  private waveElapsedMs: number = 0;
+  private elapsedMs = 0;
+  private slope!: SlopeGeometry;
+  private player!: PlayerController;
+  private spawner!: BoulderSpawner;
+  private waves = new WaveManager();
+  private timer = new ScoreTimer();
 
   constructor() {
     super({ key: "GameScene" });
+  }
+
+  init() {
+    this.elapsedMs = 0;
+    this.waves.reset();
+    this.timer.reset();
+  }
+
+  restart() {
+    // Reset player position for next wave
+    if (this.player) {
+      this.player.reset();
+    }
+    if (this.spawner) {
+      this.spawner.reset();
+    }
+    this.elapsedMs = 0;
+    this.timer.reset();
   }
 
   create() {
     const w = this.scale.width;
     const h = this.scale.height;
 
-    // Slope geometry
-    this.slopeBottom = new Phaser.Math.Vector2(0, h);
-    this.slopeTop = new Phaser.Math.Vector2(w, 0.4 * h);
-    const slopeVec = this.slopeTop.clone().subtract(this.slopeBottom);
-    this.slopeLength = slopeVec.length();
-    this.slopeUnit = slopeVec.clone().normalize();
-    this.slopeNormal = new Phaser.Math.Vector2(-this.slopeUnit.y, this.slopeUnit.x); // left-hand normal
+    const bottom = new Phaser.Math.Vector2(0, h);
+    const top = new Phaser.Math.Vector2(w, 0.4 * h);
+    const vec = top.clone().subtract(bottom);
+    this.slope = {
+      bottom,
+      top,
+      unit: vec.clone().normalize(),
+      normal: new Phaser.Math.Vector2(-vec.y, vec.x).normalize(),
+      length: vec.length(),
+    };
 
-    // Background
     const g = this.add.graphics();
     g.fillStyle(0x0b0a10, 1);
     g.fillRect(0, 0, w, h);
     g.fillStyle(0x2b2146, 1);
     g.beginPath();
-    g.moveTo(this.slopeBottom.x, this.slopeBottom.y);
-    g.lineTo(this.slopeTop.x, this.slopeTop.y);
+    g.moveTo(this.slope.bottom.x, this.slope.bottom.y);
+    g.lineTo(this.slope.top.x, this.slope.top.y);
     g.lineTo(w, h);
     g.closePath();
     g.fillPath();
 
-    // Player attached to slope path
-    this.playerSprite = this.add.image(0, 0, "player");
-    this.playerSprite.setOrigin(0.5);
-    this.playerS = 0.15;
-    this.positionPlayer();
-
-    // Controls
+    this.player = new PlayerController(this, this.slope, {});
     this.cursors = this.input.keyboard?.createCursorKeys();
     this.spaceKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
-    // Launch UI scene on top
-    this.scene.launch("UIScene", { gameOver: false, timeSurvivedMs: 0, wave: this.waveIndex });
+    this.spawner = new BoulderSpawner(this, this.slope);
+    this.scene.launch("UIScene", { gameOver: false, timeSurvivedMs: 0, wave: 1 });
+
+    this.events.on("shutdown", () => {
+      this.player.destroy();
+      this.spawner.destroy();
+      this.time.removeAllEvents();
+    });
   }
 
   update(_time: number, delta: number) {
     const dt = delta / 1000;
-    this.elapsedMs += delta;
-    this.waveElapsedMs += delta;
+    this.elapsedMs = this.timer.update(delta);
 
-    // Wave system
-    const { spawnEveryMs, speedMultiplier, waveDurationMs } = this.getWaveParams();
-    if (this.waveElapsedMs >= waveDurationMs) {
-      this.waveIndex += 1;
-      this.waveElapsedMs = 0;
-      const ui = this.scene.get("UIScene");
-      ui?.events.emit("wave", this.waveIndex);
-    }
+    // Waves
+    const waveUpdate = this.waves.update(delta);
+    const waveParams = waveUpdate.params;
+    if (waveUpdate.changed) this.scene.get("UIScene")?.events.emit("wave", this.waves.index);
 
-    // Spawning
-    this.spawnAccumulatorMs += delta;
-    if (this.spawnAccumulatorMs >= spawnEveryMs) {
-      this.spawnAccumulatorMs = 0;
-      this.spawnBoulder(speedMultiplier);
-    }
+    // Player
+    const jumpPressed = Phaser.Input.Keyboard.JustDown(this.spaceKey);
+    this.player.update(dt, this.cursors, jumpPressed);
 
-    // Player traverse along slope
-    if (this.cursors?.up?.isDown) this.playerS += 0.45 * dt;
-    if (this.cursors?.down?.isDown) this.playerS -= 0.55 * dt;
-    this.playerS = Phaser.Math.Clamp(this.playerS, 0, 1);
-    // Jump with Space along normal
-    if (Phaser.Input.Keyboard.JustDown(this.spaceKey) && this.grounded) {
-      this.playerNormalVel = 520;
-      this.grounded = false;
-    }
-    if (!this.grounded) {
-      this.playerNormalVel -= 1350 * dt; // gravity back to slope (tuned)
-      this.playerNormalOffset += this.playerNormalVel * dt;
-      if (this.playerNormalOffset <= 0) {
-        this.playerNormalOffset = 0;
-        this.playerNormalVel = 0;
-        this.grounded = true;
-      }
-    }
-    this.positionPlayer();
+    // Spawner
+    const baseSpeed = 110 + this.elapsedMs * 0.045;
+    this.spawner.update(delta, waveParams.spawnEveryMs, baseSpeed * waveParams.speedMultiplier);
 
-    // Move boulders along slope
-    for (let i = this.boulders.length - 1; i >= 0; i--) {
-      const b = this.boulders[i];
-      const baseSpeed = 140 + this.elapsedMs * 0.08; // ramp with time
-      const speed = baseSpeed * speedMultiplier;
-      const ds = (speed * dt) / this.slopeLength;
-      b.s -= ds;
-      b.rollAngleDeg -= (speed * dt) / Math.max(10, b.radius) * 30;
-      const pos = this.pointAtS(b.s).add(this.slopeNormal.clone().scale(-b.radius));
-      b.sprite.setPosition(pos.x, pos.y);
-      const baseRot = Math.atan2(this.slopeUnit.y, this.slopeUnit.x);
-      b.sprite.setRotation(baseRot + Phaser.Math.DegToRad(b.rollAngleDeg));
-
-      // Cull at bottom
-      if (b.s <= -0.05) {
-        b.sprite.destroy();
-        this.boulders.splice(i, 1);
-        continue;
-      }
-
-      // Collision: simple circle vs circle (upright logic)
-      const p = this.playerSprite.getCenter();
-      const dist = Phaser.Math.Distance.Between(p.x, p.y, b.sprite.x, b.sprite.y);
-      if (dist <= this.playerRadius + b.radius) {
-        this.scene.start("UIScene", { gameOver: true, timeSurvivedMs: this.elapsedMs, wave: this.waveIndex });
-        this.scene.pause();
-        return;
-      }
-    }
-
-    // Win when reaching top
-    if (this.playerS >= 0.98) {
-      this.scene.start("UIScene", { gameOver: false, timeSurvivedMs: this.elapsedMs, win: true, wave: this.waveIndex });
+    // Collisions
+    if (this.spawner.collides(this.player.getCenter(), this.player.getRadius())) {
+      this.scene.start("UIScene", { gameOver: true, timeSurvivedMs: this.elapsedMs, wave: this.waves.index });
       this.scene.pause();
       return;
     }
 
-    // Update UI
-    const ui = this.scene.get("UIScene");
-    ui?.events.emit("tick", this.elapsedMs);
+    // Win - progress to next wave
+    if (this.player.getS() >= 0.98) {
+      this.waves.nextWave();
+      this.scene.start("UIScene", { gameOver: false, timeSurvivedMs: this.elapsedMs, win: true, wave: this.waves.index, nextWave: true });
+      this.scene.pause();
+      return;
+    }
+
+    // UI tick
+    this.scene.get("UIScene")?.events.emit("tick", this.elapsedMs);
   }
 
-  private positionPlayer() {
-    const base = this.pointAtS(this.playerS).add(this.slopeNormal.clone().scale(-this.playerRadius));
-    const pos = base.add(this.slopeNormal.clone().scale(-this.playerNormalOffset));
-    this.playerSprite.setPosition(pos.x, pos.y);
-    this.playerSprite.setRotation(Math.atan2(this.slopeUnit.y, this.slopeUnit.x));
-  }
-
-  private pointAtS(s: number): Phaser.Math.Vector2 {
-    const clamped = Phaser.Math.Clamp(s, 0, 1);
-    const vec = this.slopeBottom.clone().add(this.slopeUnit.clone().scale(this.slopeLength * clamped));
-    return vec;
-  }
-
-  private spawnBoulder(speedMultiplier: number) {
-    // Spawn near top
-    const s = Phaser.Math.FloatBetween(0.88, 0.98);
-    const radius = Phaser.Math.Between(18, 28);
-    const sprite = this.add.image(0, 0, "boulder");
-    sprite.setOrigin(0.5);
-    const pos = this.pointAtS(s).add(this.slopeNormal.clone().scale(-radius));
-    sprite.setPosition(pos.x, pos.y);
-    sprite.setRotation(Math.atan2(this.slopeUnit.y, this.slopeUnit.x));
-
-    const b: Boulder = {
-      sprite,
-      s,
-      radius,
-      rollAngleDeg: 0,
-      speed: 160 * speedMultiplier,
-    };
-    this.boulders.push(b);
-  }
-
-  private getWaveParams(): { spawnEveryMs: number; speedMultiplier: number; waveDurationMs: number } {
-    // Gentle spawn; focus on speed ramping per wave
-    const waveDurationMs = 18000; // 18s per wave
-    const baseInterval = 1300; // ms
-    const interval = Math.max(900, baseInterval - (this.waveIndex - 1) * 80);
-    const speedMultiplier = 1 + (this.waveIndex - 1) * 0.15;
-    return { spawnEveryMs: interval, speedMultiplier, waveDurationMs };
-  }
+  // Helper methods removed - handled by systems
 }
 
 

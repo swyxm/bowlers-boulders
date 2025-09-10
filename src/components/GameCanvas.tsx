@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Phaser from "phaser";
+import * as Phaser from "phaser";
 import { BootScene } from "../game/scenes/BootScene";
 import { PreloadScene } from "../game/scenes/PreloadScene";
 import { GameScene } from "../game/scenes/GameScene";
@@ -19,24 +19,27 @@ export default function GameCanvas({ selectedCharacter }: GameCanvasProps) {
     if (!containerRef.current) return;
     if (gameRef.current) return;
 
-    // Use a fixed base size and Scale.FIT so Phaser manages responsive scaling
-    const baseWidth = 1280;
-    const baseHeight = 720;
+    // Responsive: match container size via RESIZE
+    const baseWidth = containerRef.current.clientWidth || 1920;
+    const baseHeight = containerRef.current.clientHeight || 1080;
 
-    const config: Phaser.Types.Core.GameConfig = {
+    const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
+    // Use resolution at the top-level (per Phaser docs) to get crisp rendering on HiDPI
+    const config: Phaser.Types.Core.GameConfig & { resolution?: number } = {
       type: Phaser.AUTO,
       parent: containerRef.current,
       backgroundColor: "#1b1329",
+      resolution: dpr,
       scale: {
-        mode: Phaser.Scale.FIT,
+        mode: Phaser.Scale.RESIZE,
         autoCenter: Phaser.Scale.CENTER_BOTH,
         width: baseWidth,
         height: baseHeight,
       },
       render: {
-        antialias: false,
-        pixelArt: true,
-        roundPixels: true,
+        antialias: true,
+        pixelArt: false,
+        roundPixels: false,
         powerPreference: "high-performance",
       },
       physics: {
