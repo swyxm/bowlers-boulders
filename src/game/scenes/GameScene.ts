@@ -1,6 +1,7 @@
 import * as Phaser from "phaser";
 import { PlayerController, type SlopeGeometry } from "../systems/PlayerController";
 import { BoulderSpawner } from "../systems/BoulderSpawner";
+import { BowlerAnimator } from "../systems/BowlerAnimator";
 import { WaveManager } from "../systems/WaveManager";
 import { ScoreTimer } from "../systems/ScoreTimer";
 
@@ -11,16 +12,22 @@ export class GameScene extends Phaser.Scene {
   private slope!: SlopeGeometry;
   private player!: PlayerController;
   private spawner!: BoulderSpawner;
-  private waves = new WaveManager();
+  private bowler!: BowlerAnimator;
+  private waves!: WaveManager;
   private timer = new ScoreTimer();
 
   constructor() {
     super({ key: "GameScene" });
   }
 
-  init() {
+  init(data?: { resetWaves?: boolean }) {
     this.elapsedMs = 0;
-    this.waves.reset();
+    // Initialize WaveManager with scene reference for persistent state
+    this.waves = new WaveManager(this);
+    // Only reset waves if explicitly requested (fresh game start)
+    if (data?.resetWaves !== false) {
+      this.waves.reset();
+    }
     this.timer.reset();
   }
 
@@ -31,6 +38,10 @@ export class GameScene extends Phaser.Scene {
     }
     if (this.spawner) {
       this.spawner.reset();
+    }
+    if (this.bowler) {
+      const params = this.waves.update(0).params;
+      this.bowler.reset(params.spawnEveryMs);
     }
     this.elapsedMs = 0;
     this.timer.reset();
@@ -67,11 +78,18 @@ export class GameScene extends Phaser.Scene {
     this.spaceKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
     this.spawner = new BoulderSpawner(this, this.slope);
-    this.scene.launch("UIScene", { gameOver: false, timeSurvivedMs: 0, wave: 1 });
+    this.bowler = new BowlerAnimator(this, this.slope, () => {
+      const origin = this.bowler.getThrowOrigin();
+      this.spawner.spawnFromWorldPosition(origin.x, origin.y);
+    });
+    const initialParams = this.waves.update(0).params;
+    this.bowler.setCycleFromInterval(initialParams.spawnEveryMs);
+    this.scene.launch("UIScene", { gameOver: false, timeSurvivedMs: 0, wave: this.waves.index });
 
     this.events.on("shutdown", () => {
       this.player.destroy();
       this.spawner.destroy();
+      this.bowler.destroy();
       this.time.removeAllEvents();
     });
   }
@@ -89,27 +107,39 @@ export class GameScene extends Phaser.Scene {
     const jumpPressed = Phaser.Input.Keyboard.JustDown(this.spaceKey);
     this.player.update(dt, this.cursors, jumpPressed);
 
-    // Spawner
+    // Bowler
+    this.bowler.update(delta);
+
     const baseSpeed = 110 + this.elapsedMs * 0.045;
-    this.spawner.update(delta, waveParams.spawnEveryMs, baseSpeed * waveParams.speedMultiplier);
+    this.spawner.update(delta, Number.MAX_SAFE_INTEGER, baseSpeed * waveParams.speedMultiplier);
+    if (waveUpdate.changed) {
+      this.bowler.setCycleFromInterval(waveParams.spawnEveryMs);
+    }
 
     // Collisions
     if (this.spawner.collides(this.player.getCenter(), this.player.getRadius())) {
+      // Reset wave state for game over
+      this.waves.reset();
       this.scene.start("UIScene", { gameOver: true, timeSurvivedMs: this.elapsedMs, wave: this.waves.index });
-      this.scene.pause();
+      this.scene.sleep();
       return;
     }
 
     // Win - progress to next wave
     if (this.player.getS() >= 0.98) {
       this.waves.nextWave();
+      // Emit wave change event before starting UIScene
+      this.scene.get("UIScene")?.events.emit("wave", this.waves.index);
       this.scene.start("UIScene", { gameOver: false, timeSurvivedMs: this.elapsedMs, win: true, wave: this.waves.index, nextWave: true });
-      this.scene.pause();
+      this.scene.sleep();
       return;
     }
 
-    // UI tick
-    this.scene.get("UIScene")?.events.emit("tick", this.elapsedMs);
+    // UI tick only if UIScene is active
+    const ui = this.scene.get("UIScene");
+    if (ui && ui.scene.isActive()) {
+      ui.events.emit("tick", this.elapsedMs);
+    }
   }
 
   // Helper methods removed - handled by systems

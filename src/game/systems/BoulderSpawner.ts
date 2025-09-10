@@ -64,9 +64,20 @@ export class BoulderSpawner {
     const s = Phaser.Math.FloatBetween(0.88, 0.98);
     const radius = Phaser.Math.Between(18, 28);
     const sprite = this.scene.add.image(0, 0, "boulder").setOrigin(0.5);
+    sprite.setDisplaySize(radius * 2, radius * 2);
     const pos = this.pointAtS(s).add(this.slope.normal.clone().scale(-radius));
     sprite.setPosition(pos.x, pos.y);
     sprite.setRotation(Math.atan2(this.slope.unit.y, this.slope.unit.x));
+    this.boulders.push({ sprite, s, radius, rollDeg: 0 });
+  }
+
+  spawnFromWorldPosition(worldX: number, worldY: number) {
+    const radius = Phaser.Math.Between(18, 28);
+    const sprite = this.scene.add.image(worldX, worldY, "boulder").setOrigin(0.5);
+    sprite.setDisplaySize(radius * 2, radius * 2);
+    sprite.setRotation(Math.atan2(this.slope.unit.y, this.slope.unit.x));
+    const fromBottom = new Phaser.Math.Vector2(worldX, worldY).subtract(this.slope.bottom);
+    const s = Phaser.Math.Clamp(fromBottom.dot(this.slope.unit) / this.slope.length, 0, 1);
     this.boulders.push({ sprite, s, radius, rollDeg: 0 });
   }
 

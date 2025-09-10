@@ -5,10 +5,22 @@ export type WaveParams = {
 };
 
 export class WaveManager {
-  private waveIndex = 1;
+  private scene: Phaser.Scene;
+  private registryKey = 'waveIndex';
+
+  constructor(scene: Phaser.Scene) {
+    this.scene = scene;
+  }
+
+  private get waveIndex(): number {
+    return this.scene.registry.get(this.registryKey) || 1;
+  }
+
+  private set waveIndex(value: number) {
+    this.scene.registry.set(this.registryKey, value);
+  }
 
   update(_deltaMs: number): { changed: boolean; params: WaveParams } {
-    // No time-based wave progression - waves advance when reaching top
     return { changed: false, params: this.currentParams() };
   }
 
@@ -21,9 +33,9 @@ export class WaveManager {
   }
 
   private currentParams(): WaveParams {
-    const baseInterval = 1600;
-    const interval = Math.max(1100, baseInterval - (this.waveIndex - 1) * 60);
-    const speedMultiplier = 1 + (this.waveIndex - 1) * 0.1;
+    const baseInterval = 2200; // ms between throws on wave 1
+    const interval = Math.max(900, baseInterval - (this.waveIndex - 1) * 140); // reduce ~140ms per wave
+    const speedMultiplier = 1 + (this.waveIndex - 1) * 0.07; // gentle speed ramp
     return { spawnEveryMs: interval, speedMultiplier, waveDurationMs: 0 }; // No duration needed
   }
 

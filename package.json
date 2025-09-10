@@ -4,9 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:stable": "./scripts/dev-stable.sh",
+    "dev:clean": "rm -rf .next && rm -rf node_modules/.cache && npm run dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "clean": "rm -rf .next && rm -rf node_modules/.cache && rm -rf .turbo && rm -rf .swc"
   },
   "dependencies": {
     "next": "15.5.2",
