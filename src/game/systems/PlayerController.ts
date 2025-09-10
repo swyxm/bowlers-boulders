@@ -37,10 +37,10 @@ export class PlayerController {
     this.slope = slope;
     this.s = opts.initialS ?? 0.15;
     this.radius = opts.radius ?? 18;
-    this.climbPerSec = opts.climbPerSec ?? 0.22;
-    this.inputAccel = opts.inputAccel ?? 7;
-    this.jumpVel = opts.jumpVel ?? 560;
-    this.fallAccel = opts.fallAccel ?? 1400;
+    this.climbPerSec = opts.climbPerSec ?? 0.10;
+    this.inputAccel = opts.inputAccel ?? 1;
+    this.jumpVel = opts.jumpVel ?? 450;
+    this.fallAccel = opts.fallAccel ?? 1100;
 
     this.sprite = this.scene.add.image(0, 0, "player").setOrigin(0.5);
     this.positionSprite();

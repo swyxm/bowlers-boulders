@@ -6,6 +6,7 @@ export type Boulder = {
   s: number;
   radius: number;
   rollDeg: number;
+  speedMultiplier: number;
 };
 
 export class BoulderSpawner {
@@ -13,6 +14,7 @@ export class BoulderSpawner {
   private slope: SlopeGeometry;
   private boulders: Boulder[] = [];
   private spawnAccumulatorMs = 0;
+  private boulderCountThisWave = 0;
 
   constructor(scene: Phaser.Scene, slope: SlopeGeometry) {
     this.scene = scene;
@@ -29,9 +31,10 @@ export class BoulderSpawner {
 
     for (let i = this.boulders.length - 1; i >= 0; i--) {
       const b = this.boulders[i];
-      const ds = (speed * dt) / this.slope.length;
+      const effectiveSpeed = speed * b.speedMultiplier;
+      const ds = (effectiveSpeed * dt) / this.slope.length;
       b.s -= ds;
-      b.rollDeg -= (speed * dt) / Math.max(10, b.radius) * 30;
+      b.rollDeg -= (effectiveSpeed * dt) / Math.max(10, b.radius) * 30;
       const pos = this.pointAtS(b.s).add(this.slope.normal.clone().scale(-b.radius));
       b.sprite.setPosition(pos.x, pos.y);
       b.sprite.setRotation(Math.atan2(this.slope.unit.y, this.slope.unit.x) + Phaser.Math.DegToRad(b.rollDeg));
@@ -54,6 +57,7 @@ export class BoulderSpawner {
     for (const b of this.boulders) b.sprite.destroy();
     this.boulders = [];
     this.spawnAccumulatorMs = 0;
+    this.boulderCountThisWave = 0;
   }
 
   destroy() {
@@ -68,7 +72,12 @@ export class BoulderSpawner {
     const pos = this.pointAtS(s).add(this.slope.normal.clone().scale(-radius));
     sprite.setPosition(pos.x, pos.y);
     sprite.setRotation(Math.atan2(this.slope.unit.y, this.slope.unit.x));
-    this.boulders.push({ sprite, s, radius, rollDeg: 0 });
+    
+
+    this.boulderCountThisWave++;
+    const speedMultiplier = this.boulderCountThisWave <= 2 ? 3.0 : 1.0;
+    
+    this.boulders.push({ sprite, s, radius, rollDeg: 0, speedMultiplier });
   }
 
   spawnFromWorldPosition(worldX: number, worldY: number) {
@@ -78,7 +87,12 @@ export class BoulderSpawner {
     sprite.setRotation(Math.atan2(this.slope.unit.y, this.slope.unit.x));
     const fromBottom = new Phaser.Math.Vector2(worldX, worldY).subtract(this.slope.bottom);
     const s = Phaser.Math.Clamp(fromBottom.dot(this.slope.unit) / this.slope.length, 0, 1);
-    this.boulders.push({ sprite, s, radius, rollDeg: 0 });
+    
+    // First two boulders of each wave move 1.5x faster
+    this.boulderCountThisWave++;
+    const speedMultiplier = this.boulderCountThisWave <= 2 ? 1.5 : 1.0;
+    
+    this.boulders.push({ sprite, s, radius, rollDeg: 0, speedMultiplier });
   }
 
   private pointAtS(s: number): Phaser.Math.Vector2 {
