@@ -1,5 +1,25 @@
 import * as Phaser from "phaser";
 
+const getMountainHeight = (x: number, width: number): number => {
+  const normalizedX = x / width;
+  
+  const mainPeak = Math.sin(normalizedX * Math.PI * 1.5); 
+  const subPeak = Math.sin(normalizedX * Math.PI * 3 + 0.5) * 0.4; 
+  
+  const jitterSize = 20;
+  const jitterX = Math.floor(normalizedX * width / jitterSize) * jitterSize / width;
+  const jitter = Math.sin(jitterX * Math.PI * 12) * 0.1; 
+  
+  const combinedHeight = mainPeak + subPeak + jitter;
+  
+  const valleyHeight = 0.85; 
+  const peakHeight = 0.4;   
+  const heightRange = valleyHeight - peakHeight;
+  
+  const normalizedHeight = (combinedHeight + 1) / 2;
+  return peakHeight + (1 - normalizedHeight) * heightRange;
+};
+
 type UIData = {
 	gameOver: boolean;
 	timeSurvivedMs: number;
@@ -11,13 +31,17 @@ type UIData = {
 export class UIScene extends Phaser.Scene {
 	private timeText?: Phaser.GameObjects.Text;
 	private gameOverText?: Phaser.GameObjects.Text;
+	private mountainGraphics?: Phaser.GameObjects.Graphics;
 
 	constructor() {
 		super({ key: "UIScene" });
 	}
 
 	create(data: UIData) {
-		// Ensure fonts are loaded for first render; wait on FontFaceSet when possible
+		if (data.gameOver || data.win) {
+			this.createMountainBackground();
+		}
+
 		this.time.delayedCall(0, async () => {
 			try {
 				const fontsApi = (document as Document & { fonts?: FontFaceSet }).fonts;
@@ -70,12 +94,73 @@ export class UIScene extends Phaser.Scene {
 		this.events.on("wave", (waveIndex: number) => waveText?.setText(`Wave: ${waveIndex}`));
 	}
 
+	private createMountainBackground() {
+		const w = this.scale.width;
+		const h = this.scale.height;
+		
+		this.mountainGraphics = this.add.graphics();
+		this.mountainGraphics.setScrollFactor(0);
+		
+		const dotSize = 2;
+		const spacing = 6;
+		
+		for (let x = 0; x < w; x += spacing) {
+			for (let y = 0; y < h; y += spacing) {
+				const mountainHeight = getMountainHeight(x, w);
+				const normalizedY = y / h;
+				
+				let color = 0x613df2; 
+				
+				if (normalizedY > mountainHeight) {
+					color = 0x39219c; 
+				}
+				
+				this.mountainGraphics.fillStyle(color, 0.5); 
+				this.mountainGraphics.fillRect(x, y, dotSize, dotSize);
+			}
+		}
+	}
+
+	private createHomeButton(x: number = 80, y: number = 40) {
+		const homeButton = this.add.rectangle(x, y, 120, 40, 0x6b7280, 1);
+		homeButton.setScrollFactor(0);
+		homeButton.setStrokeStyle(2, 0x000000);
+		homeButton.setInteractive();
+		
+		const homeText = this.add.text(x, y, "HOME", {
+			fontFamily: "Daydream, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
+			fontSize: "16px",
+			color: "#ffffff",
+			align: "center"
+		}).setOrigin(0.5).setScrollFactor(0);
+		
+		homeButton.on('pointerover', () => {
+			homeButton.setFillStyle(0x8d7cc2);
+			homeButton.setScale(1.05);
+		});
+		
+		homeButton.on('pointerout', () => {
+			homeButton.setFillStyle(0x6b7280);
+			homeButton.setScale(1);
+		});
+		
+		homeButton.on('pointerdown', () => {
+			window.location.href = '/';
+		});
+	}
+
 	private showGameOver(timeMs: number) {
+		const gameOverSounds = ['/assets/bowlinggameover1.mp3', '/assets/bowlinggameover2.mp3'];
+		const randomSound = gameOverSounds[Math.floor(Math.random() * gameOverSounds.length)];
+		const audio = new Audio(randomSound);
+		audio.volume = 0.5;
+		audio.play().catch(console.error);
+		
 		const centerX = this.scale.width / 2;
 		const centerY = this.scale.height / 2;
 		const goStyle: Phaser.Types.GameObjects.Text.TextStyle = {
 			fontFamily: "Daydream, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
-			fontSize: "36px",
+			fontSize: "48px",
 			color: "#ff4d4f",
 			align: "center",
 			shadow: { offsetX: 0, offsetY: 0, color: "#000000", blur: 10, fill: true },
@@ -90,6 +175,8 @@ export class UIScene extends Phaser.Scene {
 		const text = this.add.text(centerX, centerY, `Game Over`, goStyle).setOrigin(0.5);
 		this.add.text(centerX, centerY + 50, `Time: ${(timeMs / 1000).toFixed(1)}s`, subtextStyle).setOrigin(0.5);
 		this.add.text(centerX, centerY + 80, `Press R to Retry`, subtextStyle).setOrigin(0.5);
+		this.createHomeButton(centerX, centerY + 120);
+		
 		this.gameOverText = text;
 
 		this.input.keyboard?.once("keydown-R", () => {
@@ -104,7 +191,7 @@ export class UIScene extends Phaser.Scene {
 		const centerY = this.scale.height / 2;
 		const winStyle: Phaser.Types.GameObjects.Text.TextStyle = {
 			fontFamily: "Daydream, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
-			fontSize: "36px",
+			fontSize: "48px",
 			color: "#22c55e",
 			align: "center",
 			shadow: { offsetX: 0, offsetY: 0, color: "#000000", blur: 10, fill: true },
@@ -122,6 +209,8 @@ export class UIScene extends Phaser.Scene {
 		this.add.text(centerX, centerY + 50, `Time: ${(timeMs / 1000).toFixed(1)}s`, subtextStyle).setOrigin(0.5);
 		const instructionText = nextWave ? `Press C to Continue to Next Wave` : `Press R to Retry`;
 		this.add.text(centerX, centerY + 80, instructionText, subtextStyle).setOrigin(0.5);
+		this.createHomeButton(centerX, centerY + 120);
+		
 		this.gameOverText = text;
 
 		if (nextWave) {

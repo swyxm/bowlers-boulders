@@ -85,6 +85,18 @@ export default function Home() {
   const [character, setCharacter] = useState("archer");
   const playHref = `/game?c=${encodeURIComponent(character)}`;
   
+  useEffect(() => {
+    const audio = new Audio('/assets/bowlingmusic.mp3');
+    audio.loop = true;
+    audio.volume = 0.3;
+    audio.play().catch(console.error);
+    
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+    };
+  }, []);
+  
   return (
     <div className="min-h-screen w-full relative overflow-hidden bg-bg-base">
       {/* Animated Background Elements */}
@@ -141,8 +153,8 @@ export default function Home() {
             <div className="grid grid-cols-3 gap-4">
               {[
                 { id: "archer", name: "ARCHER", desc: "Swift & Precise", color: "#22c55e" },
-                { id: "rogue", name: "ROGUE", desc: "Stealthy", color: "#8b5cf6" },
-                { id: "tank", name: "TANK", desc: "Heavy & Strong", color: "#f59e0b" }
+                { id: "valk", name: "VALKYRIE", desc: "Goon Goddess", color: "#8b5cf6" },
+                { id: "witch", name: "TWIN PICKED WITCH TS COMING", desc: "MILF", color: "#f59e0b" }
               ].map((char) => (
                 <button
                   key={char.id}
