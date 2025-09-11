@@ -5,33 +5,26 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Button from "@/components/Button";
 
-// Mountain silhouette function
 const getMountainHeight = (x: number, width: number): number => {
   const normalizedX = x / width;
   
-  // Create smooth mountain shapes with slight jitter
-  const mainPeak = Math.sin(normalizedX * Math.PI * 1.5); // Main mountain shape
-  const subPeak = Math.sin(normalizedX * Math.PI * 3 + 0.5) * 0.4; // Secondary peaks
+  const mainPeak = Math.sin(normalizedX * Math.PI * 1.5); 
+  const subPeak = Math.sin(normalizedX * Math.PI * 3 + 0.5) * 0.4; 
   
-  // Add slight jitter for pixelated feel
   const jitterSize = 20;
   const jitterX = Math.floor(normalizedX * width / jitterSize) * jitterSize / width;
-  const jitter = Math.sin(jitterX * Math.PI * 12) * 0.1; // Small random variation
+  const jitter = Math.sin(jitterX * Math.PI * 12) * 0.1;
   
-  // Combine for smooth diagonals with jitter
   const combinedHeight = mainPeak + subPeak + jitter;
   
-  // Map to screen coordinates: valleys at 85%, peaks at 40%
-  const valleyHeight = 0.85;  // Bottom valleys
-  const peakHeight = 0.4;     // Tall peaks
-  const heightRange = valleyHeight - peakHeight; // 0.45 range
+  const valleyHeight = 0.85; 
+  const peakHeight = 0.4; 
+  const heightRange = valleyHeight - peakHeight;
   
-  // Convert from -1 to 1 range to valley-peak range
-  const normalizedHeight = (combinedHeight + 1) / 2; // Convert to 0-1
+  const normalizedHeight = (combinedHeight + 1) / 2;
   return peakHeight + (1 - normalizedHeight) * heightRange;
 };
 
-// Mountain dots component
 const MountainDots = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
@@ -42,28 +35,24 @@ const MountainDots = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Set canvas size
     const rect = canvas.getBoundingClientRect();
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     const dotSize = 2;
     const spacing = 6;
     
-    // Draw dots
     for (let x = 0; x < canvas.width; x += spacing) {
       for (let y = 0; y < canvas.height; y += spacing) {
         const mountainHeight = getMountainHeight(x, canvas.width);
         const normalizedY = y / canvas.height;
         
-        let color = '#613df2'; // Lighter background purple
+        let color = '#613df2'; 
         
-        // If we're below the mountain line, make dots darker (single depth)
         if (normalizedY > mountainHeight) {
-          color = '#39219c'; // Single mountain color
+          color = '#39219c'; 
         }
         
         ctx.fillStyle = color;
@@ -88,12 +77,10 @@ export default function Home() {
   const playHref = `/game?c=${encodeURIComponent(character)}`;
   
   useEffect(() => {
-    // Initialize audio but don't play yet
     audioRef.current = new Audio('/assets/bowlingmusic.mp3');
     audioRef.current.loop = true;
     audioRef.current.volume = 0.3;
     
-    // Cleanup on unmount
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
@@ -112,12 +99,9 @@ export default function Home() {
   
   return (
     <div className="min-h-screen w-full relative overflow-hidden bg-bg-base" onClick={startMusic}>
-      {/* Animated Background Elements */}
       <div className="absolute inset-0">
-        {/* Mountain silhouette using positioned dots */}
         <MountainDots />
         
-        {/* Subtle glow effects */}
         <div className="absolute top-20 left-20 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl animate-float"></div>
         <div className="absolute top-40 right-32 w-24 h-24 bg-purple-400/15 rounded-full blur-xl animate-float" style={{animationDelay: '1s'}}></div>
         <div className="absolute bottom-32 left-1/3 w-40 h-40 bg-purple-600/10 rounded-full blur-3xl animate-float" style={{animationDelay: '2s'}}></div>
@@ -150,7 +134,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Character Selection */}
         <div className="w-full max-w-lg mx-auto mb-10 animate-scale-in" style={{animationDelay: '0.9s'}}>
           <div className="bg-bg-dark border-2 border-primary rounded-xl p-6 shadow-2xl animate-pulse-glow">
             <div className="text-center mb-6">
@@ -218,14 +201,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex justify-center mb-8 animate-slide-in" style={{animationDelay: '1.2s'}}>
           <Button href={playHref} className="w-80">
             PLAY NOW
           </Button>
         </div>
-
-        {/* Instructions */}
         <div className="text-center animate-slide-in" style={{animationDelay: '1.5s'}}>
           <div className="bg-bg-dark/80 border border-purple-400 rounded-lg px-8 py-4 inline-block" style={{
             background: 'linear-gradient(135deg, #3d2f7a 0%, #4a3c8b 100%)'

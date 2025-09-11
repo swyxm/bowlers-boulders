@@ -87,8 +87,6 @@ export class BoulderSpawner {
     sprite.setRotation(Math.atan2(this.slope.unit.y, this.slope.unit.x));
     const fromBottom = new Phaser.Math.Vector2(worldX, worldY).subtract(this.slope.bottom);
     const s = Phaser.Math.Clamp(fromBottom.dot(this.slope.unit) / this.slope.length, 0, 1);
-    
-    // First two boulders of each wave move 1.5x faster
     this.boulderCountThisWave++;
     const speedMultiplier = this.boulderCountThisWave <= 2 ? 1.5 : 1.0;
     
@@ -102,7 +100,6 @@ export class BoulderSpawner {
       const t = clamped;
       
       if (this.slope.curveType === 'cubic' && this.slope.control1 && this.slope.control2 && this.slope.control3) {
-        // Use cubic Bezier curve: B(t) = (1-t)³P₀ + 3(1-t)²tP₁ + 3(1-t)t²P₂ + t³P₃
         const oneMinusT = 1 - t;
         const oneMinusTCubed = oneMinusT * oneMinusT * oneMinusT;
         const threeOneMinusTSquaredT = 3 * oneMinusT * oneMinusT * t;
@@ -120,7 +117,7 @@ export class BoulderSpawner {
         
         return new Phaser.Math.Vector2(x, y);
       } else {
-        // Fallback to quadratic Bezier curve
+       
         const oneMinusT = 1 - t;
         const oneMinusTSquared = oneMinusT * oneMinusT;
         const twoOneMinusTT = 2 * oneMinusT * t;
@@ -136,7 +133,6 @@ export class BoulderSpawner {
         return new Phaser.Math.Vector2(x, y);
       }
     } else {
-      // Straight line (original behavior)
       return this.slope.bottom.clone().add(this.slope.unit.clone().scale(this.slope.length * clamped));
     }
   }

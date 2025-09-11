@@ -9,45 +9,32 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Background Colors - Blurple theme
-        'bg-base': '#2d1b69',      // Rich blurple background
-        'bg-dark': '#3d2f7a',      // Slightly lighter blurple
-        'bg-medium': '#4a3c8b',    // Medium blurple for depth
-        'bg-light': '#5a4c9b',     // Light blurple for highlights
+        'bg-base': '#2d1b69',
+        'bg-dark': '#3d2f7a',
+        'bg-medium': '#4a3c8b',
+        'bg-light': '#5a4c9b',
         
-        // Primary Colors - Blurple inspired
-        'primary': '#e8e1f3',      // Light purple text
-        'primary-light': '#ffffff', // White text
-        'primary-dark': '#c8b9ea',  // Darker purple text
+ 
+        'primary': '#e8e1f3',
+        'primary-light': '#ffffff',
+        'primary-dark': '#c8b9ea',
         
-        // Secondary Colors
-        'secondary': '#c8b9ea',    // Light purple
-        'secondary-light': '#ffffff', // White
-        'secondary-dark': '#a998d8', // Darker purple
+        'secondary': '#c8b9ea',
+        'secondary-light': '#ffffff',
+        'secondary-dark': '#a998d8',
         
-        // Accent Colors
-        'accent': '#a998d8',       // Purple accent
-        'accent-light': '#c8b9ea', // Lighter purple
-        'accent-dark': '#8b7cb8',  // Darker purple
+        'accent': '#a998d8',      
+        'accent-light': '#c8b9ea',
+        'accent-dark': '#8b7cb8', 
+
         
-        // Character Colors
-        'runner': '#22c55e',       // Green for Runner
-        'rogue': '#8b5cf6',        // Purple for Rogue  
-        'tank': '#f59e0b',         // Orange for Tank
-        
-        // Character Background Colors
-        'bg-runner': '#2d1b69',    // Blurple background
-        'bg-rogue': '#2d1b69',     // Blurple background
-        'bg-tank': '#2d1b69',      // Blurple background
-        
-        // UI Colors
-        'border': '#4a3c8b',       // Blurple border
-        'border-light': '#6b4c9b', // Light blurple border
-        'shadow': '#1a0f2e',       // Dark purple shadow
-        'text-primary': '#e8e1f3', // Light text
-        'text-secondary': '#c8b9ea', // Secondary light text
-        'panel-bg': '#f3f4f6',     // Light grey panel
-        'speckle': '#8b5cf6',      // Purple speckle color
+        'border': '#4a3c8b',      
+        'border-light': '#6b4c9b',
+        'shadow': '#1a0f2e',      
+        'text-primary': '#e8e1f3',
+        'text-secondary': '#c8b9ea',
+        'panel-bg': '#f3f4f6',  
+        'speckle': '#8b5cf6',   
       },
       fontFamily: {
         'daydream': ['Daydream', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],

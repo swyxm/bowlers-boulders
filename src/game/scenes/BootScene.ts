@@ -10,7 +10,6 @@ export class BootScene extends Phaser.Scene {
   }
 
   init(data: BootData) {
-    // Pass through initial data
     this.registry.set("selectedCharacter", data?.selectedCharacter ?? null);
   }
 

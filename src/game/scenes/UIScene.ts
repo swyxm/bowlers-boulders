@@ -75,7 +75,7 @@ export class UIScene extends Phaser.Scene {
 			fontFamily: "BowlerSubtext, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
 			fontSize: "18px",
 			color: "#4f4b57",
-			resolution: typeof window !== "undefined" ? Math.max(1, window.devicePixelRatio || 1) : 2, // Max DPI rendering
+			resolution: typeof window !== "undefined" ? Math.max(1, window.devicePixelRatio || 1) : 2,
 		};
 		
 		const x = 22; 

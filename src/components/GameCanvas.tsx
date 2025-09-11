@@ -19,12 +19,10 @@ export default function GameCanvas({ selectedCharacter }: GameCanvasProps) {
     if (!containerRef.current) return;
     if (gameRef.current) return;
 
-    // Responsive: match container size via RESIZE
     const baseWidth = containerRef.current.clientWidth || 1920;
     const baseHeight = containerRef.current.clientHeight || 1080;
 
     const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
-    // Use resolution at the top-level (per Phaser docs) to get crisp rendering on HiDPI
     const config: Phaser.Types.Core.GameConfig & { resolution?: number } = {
       type: Phaser.AUTO,
       parent: containerRef.current,
@@ -55,7 +53,6 @@ export default function GameCanvas({ selectedCharacter }: GameCanvasProps) {
     const game = new Phaser.Game(config);
     gameRef.current = game;
 
-    // Add scenes and start flow
     game.scene.add("BootScene", BootScene, true, { selectedCharacter: selectedCharacter ?? undefined });
     game.scene.add("PreloadScene", PreloadScene, false);
     game.scene.add("GameScene", GameScene, false);

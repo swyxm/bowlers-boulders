@@ -76,7 +76,6 @@ export class BowlerAnimator {
   }
 
   getThrowOrigin(): Phaser.Math.Vector2 {
-    // Spawn point slightly in front of bowler along slope direction
     const ahead = this.slope.unit.clone().scale(24);
     return new Phaser.Math.Vector2(this.container.x + ahead.x, this.container.y + ahead.y);
   }

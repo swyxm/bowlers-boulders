@@ -33,10 +33,10 @@ export class WaveManager {
   }
 
   private currentParams(): WaveParams {
-    const baseInterval = 2200; // ms between throws on wave 1
-    const interval = Math.max(900, baseInterval - (this.waveIndex - 1) * 140); // reduce ~140ms per wave
-    const speedMultiplier = 1 + (this.waveIndex - 1) * 0.07; // gentle speed ramp
-    return { spawnEveryMs: interval, speedMultiplier, waveDurationMs: 0 }; // No duration needed
+    const baseInterval = 2200;
+    const interval = Math.max(900, baseInterval - (this.waveIndex - 1) * 140);
+    const speedMultiplier = 1 + (this.waveIndex - 1) * 0.07; 
+    return { spawnEveryMs: interval, speedMultiplier, waveDurationMs: 0 };
   }
 
   reset() {
