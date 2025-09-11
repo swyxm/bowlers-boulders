@@ -167,7 +167,7 @@ export default function Home() {
               {[
                 { id: "archer", name: "ARCHER", desc: "Swift & Precise", color: "#22c55e" },
                 { id: "valk", name: "VALKYRIE", desc: "Goon Goddess", color: "#f59e0b" },
-                { id: "witch", name: "TWIN PICKED WITCH TS COMING", desc: "MILF", color: "#8b5cf6" }
+                { id: "witch", name: "WITCH 4 TWIN", desc: "milf", color: "#8b5cf6" }
               ].map((char) => (
                 <button
                   key={char.id}
