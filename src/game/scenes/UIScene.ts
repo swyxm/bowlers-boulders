@@ -41,7 +41,6 @@ export class UIScene extends Phaser.Scene {
 		if (data.gameOver || data.win) {
 			this.createMountainBackground();
 		}
-
 		this.time.delayedCall(0, async () => {
 			try {
 				const fontsApi = (document as Document & { fonts?: FontFaceSet }).fonts;
@@ -49,21 +48,22 @@ export class UIScene extends Phaser.Scene {
 					await Promise.race([
 						Promise.all([
 							fontsApi.load('18px "BowlerSubtext"'),
+							fontsApi.load('36px "Daydream"'),
+							fontsApi.load('48px "Daydream"'),
 							fontsApi.ready,
 						]),
-						new Promise((resolve) => setTimeout(resolve, 200)), // Fallback
+						new Promise((resolve) => setTimeout(resolve, 500)), 
 					]);
 				}
 			} catch {}
 			this.createHUDText(data);
+			if (data.gameOver && !data.win) {
+				this.showGameOver(data.timeSurvivedMs);
+			} else if (data.win) {
+				this.showWin(data.timeSurvivedMs, data.nextWave);
+			}
 		});
 
-
-		if (data.gameOver && !data.win) {
-			this.showGameOver(data.timeSurvivedMs);
-		} else if (data.win) {
-			this.showWin(data.timeSurvivedMs, data.nextWave);
-		}
 		this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
 			this.events.removeAllListeners("tick");
 			this.events.removeAllListeners("wave");
@@ -71,7 +71,6 @@ export class UIScene extends Phaser.Scene {
 	}
 
 	private createHUDText(data: UIData) {
-		// Use high-quality font rendering for HUD text
 		const style: Phaser.Types.GameObjects.Text.TextStyle = {
 			fontFamily: "BowlerSubtext, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
 			fontSize: "18px",
@@ -121,30 +120,39 @@ export class UIScene extends Phaser.Scene {
 		}
 	}
 
-	private createHomeButton(x: number = 80, y: number = 40) {
-		const homeButton = this.add.rectangle(x, y, 120, 40, 0x6b7280, 1);
-		homeButton.setScrollFactor(0);
-		homeButton.setStrokeStyle(2, 0x000000);
-		homeButton.setInteractive();
+	private createButton(x: number, y: number, text: string, callback: () => void) {
+		const buttonWidth = Math.max(120, text.length * 12 + 20);
 		
-		const homeText = this.add.text(x, y, "HOME", {
-			fontFamily: "Daydream, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
+		const button = this.add.rectangle(x, y, buttonWidth, 40, 0x6b7280, 1);
+		button.setScrollFactor(0);
+		button.setStrokeStyle(2, 0x000000);
+		button.setInteractive();
+		button.setDepth(1000);
+		
+		const buttonText = this.add.text(x, y, text, {
+			fontFamily: "BowlerSubtext, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
 			fontSize: "16px",
 			color: "#ffffff",
 			align: "center"
-		}).setOrigin(0.5).setScrollFactor(0);
+		}).setOrigin(0.5).setScrollFactor(0).setDepth(1001); 
 		
-		homeButton.on('pointerover', () => {
-			homeButton.setFillStyle(0x8d7cc2);
-			homeButton.setScale(1.05);
+		button.on('pointerover', () => {
+			button.setFillStyle(0x8d7cc2);
+			button.setScale(1.05);
+			buttonText.setScale(1.05);
 		});
 		
-		homeButton.on('pointerout', () => {
-			homeButton.setFillStyle(0x6b7280);
-			homeButton.setScale(1);
+		button.on('pointerout', () => {
+			button.setFillStyle(0x6b7280);
+			button.setScale(1);
+			buttonText.setScale(1);
 		});
 		
-		homeButton.on('pointerdown', () => {
+		button.on('pointerdown', callback);
+	}
+
+	private createHomeButton(x: number = 80, y: number = 40) {
+		this.createButton(x, y, "HOME", () => {
 			window.location.href = '/';
 		});
 	}
@@ -175,7 +183,13 @@ export class UIScene extends Phaser.Scene {
 		const text = this.add.text(centerX, centerY, `Game Over`, goStyle).setOrigin(0.5);
 		this.add.text(centerX, centerY + 50, `Time: ${(timeMs / 1000).toFixed(1)}s`, subtextStyle).setOrigin(0.5);
 		this.add.text(centerX, centerY + 80, `Press R to Retry`, subtextStyle).setOrigin(0.5);
-		this.createHomeButton(centerX, centerY + 120);
+		
+		this.createButton(centerX - 80, centerY + 160, "RESTART", () => {
+			this.scene.stop("UIScene");
+			this.scene.stop("GameScene");
+			this.scene.start("GameScene");
+		});
+		this.createHomeButton(centerX + 80, centerY + 160);
 		
 		this.gameOverText = text;
 
@@ -209,7 +223,21 @@ export class UIScene extends Phaser.Scene {
 		this.add.text(centerX, centerY + 50, `Time: ${(timeMs / 1000).toFixed(1)}s`, subtextStyle).setOrigin(0.5);
 		const instructionText = nextWave ? `Press C to Continue to Next Wave` : `Press R to Retry`;
 		this.add.text(centerX, centerY + 80, instructionText, subtextStyle).setOrigin(0.5);
-		this.createHomeButton(centerX, centerY + 120);
+		
+		if (nextWave) {
+			this.createButton(centerX - 80, centerY + 160, "CONTINUE", () => {
+				this.scene.stop("UIScene");
+				this.scene.stop("GameScene");
+				this.scene.start("GameScene", { resetWaves: false });
+			});
+		} else {
+			this.createButton(centerX - 80, centerY + 160, "RESTART", () => {
+				this.scene.stop("UIScene");
+				this.scene.stop("GameScene");
+				this.scene.start("GameScene", { resetWaves: true });
+			});
+		}
+		this.createHomeButton(centerX + 80, centerY + 160);
 		
 		this.gameOverText = text;
 
