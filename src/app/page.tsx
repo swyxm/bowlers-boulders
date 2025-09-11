@@ -83,22 +83,35 @@ const MountainDots = () => {
 
 export default function Home() {
   const [character, setCharacter] = useState("archer");
+  const [musicStarted, setMusicStarted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const playHref = `/game?c=${encodeURIComponent(character)}`;
   
   useEffect(() => {
-    const audio = new Audio('/assets/bowlingmusic.mp3');
-    audio.loop = true;
-    audio.volume = 0.3;
-    audio.play().catch(console.error);
+    // Initialize audio but don't play yet
+    audioRef.current = new Audio('/assets/bowlingmusic.mp3');
+    audioRef.current.loop = true;
+    audioRef.current.volume = 0.3;
     
+    // Cleanup on unmount
     return () => {
-      audio.pause();
-      audio.currentTime = 0;
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
     };
   }, []);
+
+  const startMusic = () => {
+    if (audioRef.current && !musicStarted) {
+      audioRef.current.play().then(() => {
+        setMusicStarted(true);
+      }).catch(console.error);
+    }
+  };
   
   return (
-    <div className="min-h-screen w-full relative overflow-hidden bg-bg-base">
+    <div className="min-h-screen w-full relative overflow-hidden bg-bg-base" onClick={startMusic}>
       {/* Animated Background Elements */}
       <div className="absolute inset-0">
         {/* Mountain silhouette using positioned dots */}
