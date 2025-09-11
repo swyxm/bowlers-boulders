@@ -31,6 +31,11 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image("witchjump", "/assets/witch/witchjump.png");
     
     this.load.image("bowlersad", "/assets/bowlersad.png");
+    
+    this.load.audio("bowlinggameover1", "/assets/bowlinggameover1.mp3");
+    this.load.audio("bowlinggameover2", "/assets/bowlinggameover2.mp3");
+    this.load.audio("bowlingwin1", "/assets/bowlingwin1.mp3");
+    this.load.audio("bowlingwin2", "/assets/bowlingwin2.mp3");
 
     this.load.once('complete', async () => {
       try {

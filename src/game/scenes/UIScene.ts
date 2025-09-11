@@ -220,6 +220,10 @@ export class UIScene extends Phaser.Scene {
 			shadow: { offsetX: 0, offsetY: 0, color: "#000000", blur: 6, fill: true },
 		};
 		
+		const winSounds = ["bowlingwin1", "bowlingwin2"];
+		const randomWinSound = winSounds[Math.floor(Math.random() * winSounds.length)];
+		this.sound.play(randomWinSound);
+		
 		const mainMessage = nextWave ? `Wave Complete!` : `You Reached The Top!`;
 		const text = this.add.text(centerX, centerY, mainMessage, winStyle).setOrigin(0.5);
 		this.add.text(centerX, centerY + 50, `Time: ${(timeMs / 1000).toFixed(1)}s`, subtextStyle).setOrigin(0.5);
