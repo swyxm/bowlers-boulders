@@ -27,6 +27,10 @@ export class PlayerController {
   private scene: Phaser.Scene;
   private slope: SlopeGeometry;
   private sprite: Phaser.GameObjects.Image;
+  private currentKey: string = "archeridle";
+  private walkTimerMs: number = 0;
+  private isJumping: boolean = false;
+  private readonly archerScale = 0.20;
   private s: number;
   private radius: number;
   private normalOffset: number = 0;
@@ -48,7 +52,7 @@ export class PlayerController {
     this.jumpVel = opts.jumpVel ?? 450;
     this.fallAccel = opts.fallAccel ?? 1100;
 
-    this.sprite = this.scene.add.image(0, 0, "player").setOrigin(0.5);
+    this.sprite = this.scene.add.image(0, 0, this.currentKey).setOrigin(0.5).setScale(this.archerScale);
     this.positionSprite();
   }
 
@@ -60,8 +64,13 @@ export class PlayerController {
     this.s = Phaser.Math.Clamp(this.s, 0, 1);
 
     if (jumpPressed && this.grounded) {
-      this.normalVel = this.jumpVel;
-      this.grounded = false;
+      this.setSpriteKey("archersquat");
+      this.timeOnce(80, () => {
+        this.normalVel = this.jumpVel;
+        this.grounded = false;
+        this.isJumping = true;
+        this.setSpriteKey("archerjump");
+      });
     }
     if (!this.grounded) {
       this.normalVel -= this.fallAccel * dtSec;
@@ -70,16 +79,44 @@ export class PlayerController {
         this.normalOffset = 0;
         this.normalVel = 0;
         this.grounded = true;
+        this.isJumping = false;
       }
     }
 
+    this.updateAnimation(dtSec);
     this.positionSprite();
+  }
+
+  private setSpriteKey(key: string) {
+    if (this.currentKey === key) return;
+    this.currentKey = key;
+    this.sprite.setTexture(key);
+  }
+
+  private updateAnimation(dtSec: number) {
+    if (this.isJumping) return;
+
+    const moving = Math.abs(this.moveRate) > 0.05 && this.grounded;
+    if (!moving) {
+      this.setSpriteKey("archeridle");
+      this.walkTimerMs = 0;
+      return;
+    }
+
+    this.walkTimerMs += dtSec * 1000;
+    const periodMs = 220;
+    const phase = Math.floor((this.walkTimerMs % (periodMs * 2)) / periodMs);
+    this.setSpriteKey(phase === 0 ? "archeridle" : "archerstep");
+  }
+
+  private timeOnce(delayMs: number, cb: () => void) {
+    this.scene.time.delayedCall(delayMs, cb);
   }
 
   private positionSprite() {
     const pathPoint = this.pointAtS(this.s);
     const pos = pathPoint.add(this.slope.normal.clone().scale(-this.radius - this.normalOffset));
-    this.sprite.setPosition(pos.x, pos.y);
+    this.sprite.setPosition(pos.x, pos.y - 10);
     this.sprite.setRotation(Math.atan2(this.slope.unit.y, this.slope.unit.x));
   }
 

@@ -1,5 +1,4 @@
 import * as Phaser from "phaser";
-import { GameScene } from "./GameScene";
 
 type UIData = {
 	gameOver: boolean;
@@ -21,9 +20,8 @@ export class UIScene extends Phaser.Scene {
 		// Ensure fonts are loaded for first render; wait on FontFaceSet when possible
 		this.time.delayedCall(0, async () => {
 			try {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				const fontsApi: any = (document as unknown as { fonts?: unknown })?.fonts as any;
-				if (fontsApi?.load) {
+				const fontsApi = (document as Document & { fonts?: FontFaceSet }).fonts;
+				if (fontsApi && 'load' in fontsApi) {
 					await Promise.race([
 						Promise.all([
 							fontsApi.load('18px "BowlerSubtext"'),

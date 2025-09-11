@@ -20,16 +20,21 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image("bowler3", "/assets/bowler/bowler3.png");
     this.load.image("bowler4", "/assets/bowler/bowler4.png");
 
+    this.load.image("archeridle", "/assets/archer/archeridle.png");
+    this.load.image("archerstep", "/assets/archer/archerstep.png");
+    this.load.image("archersquat", "/assets/archer/archersquat.png");
+    this.load.image("archerjump", "/assets/archer/archerjump.png");
+
     this.load.once('complete', async () => {
       try {
-        const fontsApi: any = (document as unknown as { fonts?: unknown })?.fonts as any;
-        if (fontsApi?.load) {
+        const fontsApi = (document as Document & { fonts?: FontFaceSet }).fonts;
+        if (fontsApi && 'load' in fontsApi) {
           await Promise.race([
             Promise.all([
               fontsApi.load('18px "BowlerSubtext"'),
               fontsApi.ready,
             ]),
-            new Promise((resolve) => setTimeout(resolve, 300)), // Fallback timeout
+            new Promise((resolve) => setTimeout(resolve, 300)),
           ]);
         }
       } catch {

@@ -56,7 +56,28 @@ body {
   100% { transform: scale(1); opacity: 1; }
 }
 
-/* Apply animations */
+@keyframes logoGlow {
+  0%, 100% {
+    filter: drop-shadow(4px 4px 0px #000000)
+            drop-shadow(0 0 10px #4d3fb6)
+            drop-shadow(0 0 15px #4d3fb6)
+  }
+  50% {
+    filter: drop-shadow(4px 4px 0px #000000)
+            drop-shadow(0 0 10px #694cad)
+            drop-shadow(0 0 20px #694cad)
+            drop-shadow(0 0 25px #694cad);
+  }
+}
+
+.logo-glow {
+  animation: logoGlow 2s ease-in-out infinite;
+  filter: drop-shadow(4px 4px 0px #000000)
+          drop-shadow(0 0 10px #4d3fb6)
+          drop-shadow(0 0 15px #4d3fb6)
+
+}
+
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
