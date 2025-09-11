@@ -180,6 +180,8 @@ export class UIScene extends Phaser.Scene {
 			align: "center",
 			shadow: { offsetX: 0, offsetY: 0, color: "#000000", blur: 6, fill: true },
 		};
+		const sadBowler = this.add.image(centerX, centerY - 150, "bowlersad").setOrigin(0.5).setScale(0.45);
+		
 		const text = this.add.text(centerX, centerY, `Game Over`, goStyle).setOrigin(0.5);
 		this.add.text(centerX, centerY + 50, `Time: ${(timeMs / 1000).toFixed(1)}s`, subtextStyle).setOrigin(0.5);
 		this.add.text(centerX, centerY + 80, `Press R to Retry`, subtextStyle).setOrigin(0.5);
