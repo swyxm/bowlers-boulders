@@ -165,7 +165,7 @@ export default function Home() {
             
             <div className="grid grid-cols-3 gap-4">
               {[
-                { id: "archer", name: "ARCHER", desc: "Swift & Precise", color: "#22c55e" },
+                { id: "archer", name: "ARCHER", desc: "Feastable Feet", color: "#22c55e" },
                 { id: "valk", name: "VALKYRIE", desc: "Goon Goddess (soon)", color: "#f59e0b" },
                 { id: "witch", name: "WITCH 4 TWIN", desc: "milf", color: "#8b5cf6" }
               ].map((char) => (
@@ -192,11 +192,11 @@ export default function Home() {
                     ) : char.id === "witch" ? (
                       <div className="mx-auto mb-2 flex items-center justify-center">
                         <Image
-                          src="/assets/witch/witchidle.png"
+                          src="/assets/witchicon.png"
                           alt="Witch"
                           width={48}
                           height={48}
-                          className="w-18 h-18 object-contain"
+                          className="w-22 h-22 object-contain"
                         />
                       </div>
                     ) : (
