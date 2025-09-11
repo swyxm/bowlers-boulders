@@ -7,6 +7,7 @@ import { ScoreTimer } from "../systems/ScoreTimer";
 
 export class GameScene extends Phaser.Scene {
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
+  private wasd?: Phaser.Types.Input.Keyboard.CursorKeys;
   private spaceKey!: Phaser.Input.Keyboard.Key;
   private elapsedMs = 0;
   private slope!: SlopeGeometry;
@@ -82,6 +83,7 @@ export class GameScene extends Phaser.Scene {
 
     this.player = new PlayerController(this, this.slope, {});
     this.cursors = this.input.keyboard?.createCursorKeys();
+    this.wasd = this.input.keyboard?.addKeys('W,S,A,D') as Phaser.Types.Input.Keyboard.CursorKeys;
     this.spaceKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
     this.spawner = new BoulderSpawner(this, this.slope);
@@ -114,7 +116,7 @@ export class GameScene extends Phaser.Scene {
 
     // Player
     const jumpPressed = Phaser.Input.Keyboard.JustDown(this.spaceKey);
-    this.player.update(dt, this.cursors, jumpPressed);
+    this.player.update(dt, this.cursors, this.wasd, jumpPressed);
 
     // Bowler
     this.bowler.update(delta);

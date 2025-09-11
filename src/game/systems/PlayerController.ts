@@ -56,8 +56,11 @@ export class PlayerController {
     this.positionSprite();
   }
 
-  public update(dtSec: number, cursors?: Phaser.Types.Input.Keyboard.CursorKeys, jumpPressed?: boolean) {
-    const target = this.grounded ? (cursors?.up?.isDown ? 1 : cursors?.down?.isDown ? -1 : 0) : 0;
+  public update(dtSec: number, cursors?: Phaser.Types.Input.Keyboard.CursorKeys, wasd?: Phaser.Types.Input.Keyboard.CursorKeys, jumpPressed?: boolean) {
+    const forwardPressed = cursors?.up?.isDown || cursors?.right?.isDown || wasd?.up?.isDown || wasd?.right?.isDown;
+    const backwardPressed = cursors?.down?.isDown || cursors?.left?.isDown || wasd?.down?.isDown || wasd?.left?.isDown;
+    
+    const target = this.grounded ? (forwardPressed ? 1 : backwardPressed ? -1 : 0) : 0;
     this.moveRate += (target - this.moveRate) * this.inputAccel * dtSec;
 
     this.s += this.moveRate * this.climbPerSec * dtSec;

@@ -224,7 +224,7 @@ export default function Home() {
                style={{
                  textShadow: '0 0 8px #e8e1f3, 2px 2px 0px #000'
                }}>
-              🚀 SPACE to Jump • ⬆️⬇️ to Climb • 🎯 Reach the Top!
+              🚀 SPACE to Jump • ⬆️➡️⬇️⬅️ or WASD to Move • 🎯 Reach the Top!
             </p>
           </div>
         </div>

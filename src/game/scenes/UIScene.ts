@@ -88,7 +88,7 @@ export class UIScene extends Phaser.Scene {
 		
 		const currentWave = data.wave || this.registry.get('waveIndex') || 1;
 		const waveText = this.add.text(x, y2, `Wave: ${currentWave}`, style).setScrollFactor(0);
-		this.add.text(x, y3, "Space: Jump  •  Up/Down: Climb", { ...style, fontSize: "14px", color: "#c8b9ea" }).setScrollFactor(0);
+		this.add.text(x, y3, "Space: Jump  •  Arrow Keys or WASD: Move", { ...style, fontSize: "14px", color: "#c8b9ea" }).setScrollFactor(0);
 		
 		this.events.on("tick", (elapsedMs: number) => this.timeText?.setText(`Time: ${(elapsedMs / 1000).toFixed(1)}s`));
 		this.events.on("wave", (waveIndex: number) => waveText?.setText(`Wave: ${waveIndex}`));
