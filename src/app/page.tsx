@@ -154,13 +154,25 @@ export default function Home() {
                   }`}
                 >
                   <div className="text-center">
-                    <div className={`w-12 h-12 mx-auto mb-2 rounded-full border-2 ${
-                      character === char.id ? 'border-primary' : 'border-border'
-                    }`} style={{backgroundColor: char.color}}></div>
+                    {char.id === "archer" ? (
+                      <div className="mx-auto mb-2 flex items-center justify-center">
+                        <Image
+                          src="/assets/archericon.png"
+                          alt="Archer"
+                          width={48}
+                          height={48}
+                          className="w-18 h-18 object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <div className={`w-12 h-12 mx-auto mb-2 rounded-full border-2 ${
+                        character === char.id ? 'border-primary' : 'border-border'
+                      }`} style={{backgroundColor: char.color}}></div>
+                    )}
                     <div className="text-sm font-bold text-primary mb-1 font-bowler-subtext">
                       {char.name}
                     </div>
-                    <div className="text-xs text-accent font-bowler-subtext">{char.desc}</div>
+                    <div className="text-xs text-accent font-bowler-subtext" style={{fontSize: '8px'}}>{char.desc}</div>
                   </div>
                   {character === char.id && (
                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full animate-pulse"></div>
