@@ -21,16 +21,18 @@ export type PlayerControllerOptions = {
   inputAccel?: number; 
   jumpVel?: number; 
   fallAccel?: number; 
+  character?: string;
 };
 
 export class PlayerController {
   private scene: Phaser.Scene;
   private slope: SlopeGeometry;
   private sprite: Phaser.GameObjects.Image;
-  private currentKey: string = "archeridle";
+  private character: string;
+  private currentKey: string;
   private walkTimerMs: number = 0;
   private isJumping: boolean = false;
-  private readonly archerScale = 0.20;
+  private readonly spriteScale = 0.25;
   private s: number;
   private radius: number;
   private normalOffset: number = 0;
@@ -45,6 +47,7 @@ export class PlayerController {
   constructor(scene: Phaser.Scene, slope: SlopeGeometry, opts: PlayerControllerOptions = {}) {
     this.scene = scene;
     this.slope = slope;
+    this.character = opts.character ?? "archer";
     this.s = opts.initialS ?? 0.15;
     this.radius = opts.radius ?? 18;
     this.climbPerSec = opts.climbPerSec ?? 0.10;
@@ -52,7 +55,8 @@ export class PlayerController {
     this.jumpVel = opts.jumpVel ?? 450;
     this.fallAccel = opts.fallAccel ?? 1100;
 
-    this.sprite = this.scene.add.image(0, 0, this.currentKey).setOrigin(0.5).setScale(this.archerScale);
+    this.currentKey = this.getSpriteKey("idle");
+    this.sprite = this.scene.add.image(0, 0, this.currentKey).setOrigin(0.5).setScale(this.spriteScale);
     this.positionSprite();
   }
 
@@ -67,12 +71,12 @@ export class PlayerController {
     this.s = Phaser.Math.Clamp(this.s, 0, 1);
 
     if (jumpPressed && this.grounded) {
-      this.setSpriteKey("archersquat");
+      this.setSpriteKey(this.getSpriteKey("squat"));
       this.timeOnce(80, () => {
         this.normalVel = this.jumpVel;
         this.grounded = false;
         this.isJumping = true;
-        this.setSpriteKey("archerjump");
+        this.setSpriteKey(this.getSpriteKey("jump"));
       });
     }
     if (!this.grounded) {
@@ -90,6 +94,17 @@ export class PlayerController {
     this.positionSprite();
   }
 
+  private getSpriteKey(animation: string): string {
+    const prefix = this.character === "witch" ? "witch" : "archer";
+    switch (animation) {
+      case "idle": return `${prefix}idle`;
+      case "walk": return this.character === "witch" ? "witchwalk" : "archerstep";
+      case "squat": return `${prefix}squat`;
+      case "jump": return `${prefix}jump`;
+      default: return `${prefix}idle`;
+    }
+  }
+
   private setSpriteKey(key: string) {
     if (this.currentKey === key) return;
     this.currentKey = key;
@@ -101,7 +116,7 @@ export class PlayerController {
 
     const moving = Math.abs(this.moveRate) > 0.05 && this.grounded;
     if (!moving) {
-      this.setSpriteKey("archeridle");
+      this.setSpriteKey(this.getSpriteKey("idle"));
       this.walkTimerMs = 0;
       return;
     }
@@ -109,7 +124,7 @@ export class PlayerController {
     this.walkTimerMs += dtSec * 1000;
     const periodMs = 220;
     const phase = Math.floor((this.walkTimerMs % (periodMs * 2)) / periodMs);
-    this.setSpriteKey(phase === 0 ? "archeridle" : "archerstep");
+    this.setSpriteKey(phase === 0 ? this.getSpriteKey("idle") : this.getSpriteKey("walk"));
   }
 
   private timeOnce(delayMs: number, cb: () => void) {

@@ -81,7 +81,8 @@ export class GameScene extends Phaser.Scene {
     bg.setScale(scale);
     bg.setOrigin(0.5);
 
-    this.player = new PlayerController(this, this.slope, {});
+    const selectedCharacter = this.registry.get('selectedCharacter') || 'archer';
+    this.player = new PlayerController(this, this.slope, { character: selectedCharacter });
     this.cursors = this.input.keyboard?.createCursorKeys();
     this.wasd = this.input.keyboard?.addKeys('W,S,A,D') as Phaser.Types.Input.Keyboard.CursorKeys;
     this.spaceKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);

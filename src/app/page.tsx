@@ -189,6 +189,16 @@ export default function Home() {
                           className="w-18 h-18 object-contain"
                         />
                       </div>
+                    ) : char.id === "witch" ? (
+                      <div className="mx-auto mb-2 flex items-center justify-center">
+                        <Image
+                          src="/assets/witch/witchidle.png"
+                          alt="Witch"
+                          width={48}
+                          height={48}
+                          className="w-18 h-18 object-contain"
+                        />
+                      </div>
                     ) : (
                       <div className={`w-12 h-12 mx-auto mb-2 rounded-full border-2 ${
                         character === char.id ? 'border-primary' : 'border-border'

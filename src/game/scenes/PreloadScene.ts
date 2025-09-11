@@ -24,6 +24,12 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image("archerstep", "/assets/archer/archerstep.png");
     this.load.image("archersquat", "/assets/archer/archersquat.png");
     this.load.image("archerjump", "/assets/archer/archerjump.png");
+    
+    this.load.image("witchidle", "/assets/witch/witchidle.png");
+    this.load.image("witchwalk", "/assets/witch/witchwalk.png");
+    this.load.image("witchsquat", "/assets/witch/witchsquat.png");
+    this.load.image("witchjump", "/assets/witch/witchjump.png");
+    
     this.load.image("bowlersad", "/assets/bowlersad.png");
 
     this.load.once('complete', async () => {
