@@ -134,10 +134,10 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="w-full max-w-lg mx-auto mb-10 animate-scale-in" style={{animationDelay: '0.9s'}}>
+        <div className="w-full max-w-lg mx-auto mb-8 animate-scale-in" style={{animationDelay: '0.9s'}}>
           <div className="bg-bg-dark border-2 border-primary rounded-xl p-6 shadow-2xl animate-pulse-glow">
             <div className="text-center mb-6">
-              <h3 className="text-2xl font-bold text-primary-light mb-2 font-daydream"
+              <h3 className="text-2xl font-bold text-primary-light font-daydream"
                   style={{
                     textShadow: '0 0 10px #e8e1f3'
                   }}>
