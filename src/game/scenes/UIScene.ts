@@ -18,19 +18,23 @@ export class UIScene extends Phaser.Scene {
 	}
 
 	create(data: UIData) {
-		// Use CSS-loaded fonts for HUD text
-		const style: Phaser.Types.GameObjects.Text.TextStyle = {
-			fontFamily: "BowlerSubtext, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
-			fontSize: "18px",
-			color: "#e8e1f3",
-			shadow: { offsetX: 0, offsetY: 0, color: "#000000", blur: 6, fill: true },
-		};
-		this.timeText = this.add.text(16, 16, "Time: 0.0s", style).setScrollFactor(0);
-		const currentWave = this.registry.get('waveIndex') || 1;
-		const waveText = this.add.text(16, 44, `Wave: ${currentWave}`, style).setScrollFactor(0);
-		this.add.text(16, 72, "Space: Jump  •  Up/Down: Climb", { ...style, fontSize: "14px", color: "#c8b9ea" }).setScrollFactor(0);
-		this.events.on("tick", (elapsedMs: number) => this.timeText?.setText(`Time: ${(elapsedMs / 1000).toFixed(1)}s`));
-		this.events.on("wave", (waveIndex: number) => waveText?.setText(`Wave: ${waveIndex}`));
+		// Ensure fonts are loaded for first render; wait on FontFaceSet when possible
+		this.time.delayedCall(0, async () => {
+			try {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const fontsApi: any = (document as unknown as { fonts?: unknown })?.fonts as any;
+				if (fontsApi?.load) {
+					await Promise.race([
+						Promise.all([
+							fontsApi.load('18px "BowlerSubtext"'),
+							fontsApi.ready,
+						]),
+						new Promise((resolve) => setTimeout(resolve, 200)), // Fallback
+					]);
+				}
+			} catch {}
+			this.createHUDText(data);
+		});
 
 
 		if (data.gameOver && !data.win) {
@@ -42,6 +46,30 @@ export class UIScene extends Phaser.Scene {
 			this.events.removeAllListeners("tick");
 			this.events.removeAllListeners("wave");
 		});
+	}
+
+	private createHUDText(data: UIData) {
+		// Use high-quality font rendering for HUD text
+		const style: Phaser.Types.GameObjects.Text.TextStyle = {
+			fontFamily: "BowlerSubtext, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
+			fontSize: "18px",
+			color: "#4f4b57",
+			resolution: typeof window !== "undefined" ? Math.max(1, window.devicePixelRatio || 1) : 2, // Max DPI rendering
+		};
+		
+		const x = 22; 
+		const y1 = 20;
+		const y2 = 48;
+		const y3 = 76;
+		
+		this.timeText = this.add.text(x, y1, "Time: 0.0s", style).setScrollFactor(0);
+		
+		const currentWave = data.wave || this.registry.get('waveIndex') || 1;
+		const waveText = this.add.text(x, y2, `Wave: ${currentWave}`, style).setScrollFactor(0);
+		this.add.text(x, y3, "Space: Jump  •  Up/Down: Climb", { ...style, fontSize: "14px", color: "#c8b9ea" }).setScrollFactor(0);
+		
+		this.events.on("tick", (elapsedMs: number) => this.timeText?.setText(`Time: ${(elapsedMs / 1000).toFixed(1)}s`));
+		this.events.on("wave", (waveIndex: number) => waveText?.setText(`Wave: ${waveIndex}`));
 	}
 
 	private showGameOver(timeMs: number) {

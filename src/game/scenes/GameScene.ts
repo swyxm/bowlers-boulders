@@ -22,17 +22,15 @@ export class GameScene extends Phaser.Scene {
 
   init(data?: { resetWaves?: boolean }) {
     this.elapsedMs = 0;
-    // Initialize WaveManager with scene reference for persistent state
     this.waves = new WaveManager(this);
-    // Only reset waves if explicitly requested (fresh game start)
     if (data?.resetWaves !== false) {
       this.waves.reset();
     }
+    this.registry.set('waveIndex', this.waves.index);
     this.timer.reset();
   }
 
   restart() {
-    // Reset player position for next wave
     if (this.player) {
       this.player.reset();
     }
@@ -51,13 +49,14 @@ export class GameScene extends Phaser.Scene {
     const w = this.scale.width;
     const h = this.scale.height;
 
-    // Create a subtle downward curve - starts low, curves down slightly, ends low
-    const bottom = new Phaser.Math.Vector2(0, h);
-    const top = new Phaser.Math.Vector2(w, h * 0.7); // Only 30% of screen height
-    // Multiple control points for a subtle downward curve
-    const control1 = new Phaser.Math.Vector2(w * 0.2, h * 0.95); // Very gentle start
-    const control2 = new Phaser.Math.Vector2(w * 0.5, h * 0.8);  // Subtle downward curve in middle
-    const control3 = new Phaser.Math.Vector2(w * 0.8, h * 0.9); // Gentle end
+    // Create a subtle downward curve that matches the purple rocky background terrain
+    // The terrain has a gentle downward bevel/curve from left to right
+    const bottom = new Phaser.Math.Vector2(0, h * 0.8); // Start at moderate height on the left
+    const top = new Phaser.Math.Vector2(w, h * 0.46); // End lower on the right with subtle curve
+    // Control points for a subtle downward-curving rocky terrain
+    const control1 = new Phaser.Math.Vector2(w * 0.2, h * 0.81); // Gentle start, slightly higher
+    const control2 = new Phaser.Math.Vector2(w * 0.5, h * 0.85);  // Subtle downward curve in middle
+    const control3 = new Phaser.Math.Vector2(w * 0.8, h * 0.67); // Gentle downward curve to end
     
     const vec = top.clone().subtract(bottom);
     this.slope = {
@@ -92,6 +91,8 @@ export class GameScene extends Phaser.Scene {
     });
     const initialParams = this.waves.update(0).params;
     this.bowler.setCycleFromInterval(initialParams.spawnEveryMs);
+    
+    this.registry.set('waveIndex', this.waves.index);
     this.scene.launch("UIScene", { gameOver: false, timeSurvivedMs: 0, wave: this.waves.index });
 
     this.events.on("shutdown", () => {

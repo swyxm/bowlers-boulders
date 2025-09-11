@@ -39,7 +39,7 @@ export default function GameCanvas({ selectedCharacter }: GameCanvasProps) {
       render: {
         antialias: true,
         pixelArt: false,
-        roundPixels: false,
+        roundPixels: true, 
         powerPreference: "high-performance",
       },
       physics: {

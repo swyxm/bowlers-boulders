@@ -19,11 +19,26 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image("bowler2", "/assets/bowler/bowler2.png");
     this.load.image("bowler3", "/assets/bowler/bowler3.png");
     this.load.image("bowler4", "/assets/bowler/bowler4.png");
+
+    this.load.once('complete', async () => {
+      try {
+        const fontsApi: any = (document as unknown as { fonts?: unknown })?.fonts as any;
+        if (fontsApi?.load) {
+          await Promise.race([
+            Promise.all([
+              fontsApi.load('18px "BowlerSubtext"'),
+              fontsApi.ready,
+            ]),
+            new Promise((resolve) => setTimeout(resolve, 300)), // Fallback timeout
+          ]);
+        }
+      } catch {
+      }
+      this.scene.start("GameScene");
+    });
   }
 
-  create() {
-    this.scene.start("GameScene");
-  }
+  create() {}
 }
 
 
