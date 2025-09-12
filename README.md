@@ -54,7 +54,7 @@ An incredibly addictive endless runner game featuring your favorite Clash Royale
 |-----------|------|-------------|-----------------|
 | ![Archer](./public/assets/archericon.png) **Archer** | ![Archer Sprite](./public/assets/archer/archeridle.png) | Swift & Precise | Fast movement and quick jumps |
 | ![Witch](./public/assets/witchicon.png) **Witch** | ![Witch Sprite](./public/assets/witch/witchidle.png) | Mystical & Agile | Smooth animations and magical feel |
-| ![Valkyrie](./public/assets/valkicon.png) **Valkyrie** | ⚔️ | Goon Goddess (soon) | Heavy and powerful (coming soon) |
+| ![Valkyrie](./public/assets/valkicon.png) **Valkyrie** | ⚔️ | (soon) | Heavy and powerful (coming soon) |
 
 </div>
 
