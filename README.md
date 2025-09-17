@@ -1,16 +1,30 @@
-# 🎳 Bowler's Boulders! 🎳
+<h1 align="center">🎳 Bowler's Boulders! 🎳</h1>
 
-<div align="center">
-![Bowler's Boulders Banner](./public/assets/bowlersboulders.svg)
-**A Clash Royale themed endless runner where you dodge boulders and climb to victory!**
+<p align="center">
+  <img src="./public/assets/bowlersboulders.svg" alt="Bowler's Boulders Banner" />
+</p>
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.5.2-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Phaser.js](https://img.shields.io/badge/Phaser.js-3.80.1-FF6B6B?style=for-the-badge&logo=phaser)](https://phaser.io/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3.6-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
-[![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-000000?style=for-the-badge&logo=vercel)](https://vercel.com/)
+<p align="center">
+  <b>A Clash Royale themed endless runner where you dodge boulders and climb to victory!</b>
+</p>
 
-</div>
+<p align="center">
+  <a href="https://nextjs.org/">
+    <img src="https://img.shields.io/badge/Next.js-15.5.2-black?style=for-the-badge&logo=next.js" />
+  </a>
+  <a href="https://www.typescriptlang.org/">
+    <img src="https://img.shields.io/badge/TypeScript-5.9.2-blue?style=for-the-badge&logo=typescript" />
+  </a>
+  <a href="https://phaser.io/">
+    <img src="https://img.shields.io/badge/Phaser.js-3.80.1-FF6B6B?style=for-the-badge&logo=phaser" />
+  </a>
+  <a href="https://tailwindcss.com/">
+    <img src="https://img.shields.io/badge/Tailwind_CSS-3.3.6-38B2AC?style=for-the-badge&logo=tailwind-css" />
+  </a>
+  <a href="https://vercel.com/">
+    <img src="https://img.shields.io/badge/Deployed_on-Vercel-000000?style=for-the-badge&logo=vercel" />
+  </a>
+</p>
 
 ---
 
