@@ -149,8 +149,8 @@ export default function Home() {
             <div className="grid grid-cols-3 gap-4">
               {[
                 { id: "archer", name: "ARCHER", desc: "Sniper", color: "#22c55e" },
-                { id: "valk", name: "VALKYRIE", desc: "Spin n' Slice", color: "#f59e0b" },
-                { id: "witch", name: "WITCH 4 TWIN", desc: "Magical", color: "#8b5cf6" }
+                { id: "valk", name: "VALKYRIE (soon)", desc: "Spin n' Slice", color: "#f59e0b" },
+                { id: "witch", name: "WITCH", desc: "Magical", color: "#8b5cf6" }
               ].map((char) => (
                 <button
                   key={char.id}
